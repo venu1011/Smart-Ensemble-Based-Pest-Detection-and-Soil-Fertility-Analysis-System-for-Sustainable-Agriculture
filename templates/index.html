@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Pest & Soil Fertility Analysis System</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 1.3rem;
+        }
+        .card-body {
+            padding: 30px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 40px;
+            font-size: 1.1rem;
+            border-radius: 25px;
+            transition: transform 0.2s;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            padding: 12px;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border: 3px solid #667eea;
+        }
+        .status-panel {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 200px;
+        }
+        .status-text {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+        .result-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        .fertility-low {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .fertility-medium {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        .fertility-high {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .recommendation-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        .page-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .section-divider {
+            margin: 40px 0;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <!-- Page Title -->
+        <h1 class="page-title display-4">
+            <i class="bi bi-bug-fill"></i> Smart Pest & Soil Fertility Analysis System
+        </h1>
+
+        <!-- Main Input Card -->
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-upload"></i> Upload Pest Image & Enter Soil Data
+            </div>
+            <div class="card-body">
+                <form id="analysisForm">
+                    <!-- Pest Image Upload -->
+                    <div class="mb-4">
+                        <label for="pest_image" class="form-label">
+                            <i class="bi bi-image"></i> Pest Image Upload
+                        </label>
+                        <input type="file" class="form-control" id="pest_image" name="pest_image" 
+                               accept="image/*" required>
+                        <div id="imagePreview" class="mt-3"></div>
+                    </div>
+
+                    <!-- NPK Input Fields -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <label for="nitrogen" class="form-label">
+                                <i class="bi bi-flower1"></i> Nitrogen (N)
+                            </label>
+                            <input type="number" class="form-control" id="nitrogen" 
+                                   name="nitrogen" step="0.1" min="0" placeholder="e.g., 25" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="phosphorus" class="form-label">
+                                <i class="bi bi-flower2"></i> Phosphorus (P)
+                            </label>
+                            <input type="number" class="form-control" id="phosphorus" 
+                                   name="phosphorus" step="0.1" min="0" placeholder="e.g., 15" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="potassium" class="form-label">
+                                <i class="bi bi-flower3"></i> Potassium (K)
+                            </label>
+                            <input type="number" class="form-control" id="potassium" 
+                                   name="potassium" step="0.1" min="0" placeholder="e.g., 120" required>
+                        </div>
+                    </div>
+
+                    <!-- Analyze Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                            <i class="bi bi-search"></i> Analyze
+                        </button>
+                        <div class="loading-spinner spinner-border text-primary mt-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Alert Container -->
+        <div id="alertContainer"></div>
+
+        <!-- Image Upload Success Alert -->
+        <div id="uploadSuccessAlert" class="alert alert-success" style="display: none;">
+            <i class="bi bi-check-circle-fill"></i> <strong>Success!</strong> Image Uploaded Successfully!
+        </div>
+
+        <!-- Feature Extraction Section -->
+        <div id="featureExtractionSection" class="card" style="display: none;">
+            <div class="card-header">
+                <i class="bi bi-gear"></i> Feature Extraction Process
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Pest Image</h5>
+                        <img id="processedImage" src="" alt="Pest Image" class="image-preview">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="status-panel">
+                            <h5 class="mb-3">Processing Status</h5>
+                            <div id="statusText1" class="status-text">Preprocessing Image...</div>
+                            <div id="statusText2" class="status-text" style="display: none;">Extracting Features...</div>
+                            <div id="statusText3" class="status-text" style="display: none;">
+                                <strong>57 Features Extracted Successfully</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Result Card -->
+        <div id="predictionResultCard" class="card" style="display: none;">
+            <div class="card-header">
+                <i class="bi bi-graph-up"></i> Prediction Result
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img id="resultImage" src="" alt="Pest Image" class="image-preview">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="result-card">
+                            <h4><i class="bi bi-bug"></i> Detected Pest</h4>
+                            <h2 id="detectedPest" class="mt-3">-</h2>
+                            <hr>
+                            <h4><i class="bi bi-percent"></i> Confidence</h4>
+                            <h2 id="confidenceScore" class="mt-3">-</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Soil Fertility Analysis Card -->
+        <div id="soilAnalysisCard" class="card" style="display: none;">
+            <div class="card-header">
+                <i class="bi bi-flower3"></i> Soil Fertility Analysis
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h5>Nitrogen (N)</h5>
+                        <p><strong id="nValue">-</strong> <span id="nStatus" class="fertility-low">-</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Phosphorus (P)</h5>
+                        <p><strong id="pValue">-</strong> <span id="pStatus" class="fertility-low">-</span></p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5>Potassium (K)</h5>
+                        <p><strong id="kValue">-</strong> <span id="kStatus" class="fertility-low">-</span></p>
+                    </div>
+                </div>
+                <hr>
+                <div class="mt-3">
+                    <h5>Overall Fertility Status: <span id="overallStatus" class="fertility-medium">-</span></h5>
+                    <div id="imbalanceMessage" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations Card -->
+        <div id="recommendationsCard" class="card" style="display: none;">
+            <div class="card-header">
+                <i class="bi bi-lightbulb"></i> Recommendations
+            </div>
+            <div class="card-body">
+                <!-- Pest Control Recommendations -->
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-shield-check"></i> Pest Control Recommendations</h5>
+                    <div id="pestRecommendations"></div>
+                </div>
+                <hr>
+                <!-- Fertilizer Recommendations -->
+                <div class="mb-4">
+                    <h5 class="mb-3"><i class="bi bi-fertilizer"></i> Fertilizer Recommendations</h5>
+                    <div id="fertilizerRecommendations"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Result Summary -->
+        <div id="summaryCard" class="card" style="display: none;">
+            <div class="card-header">
+                <i class="bi bi-clipboard-check"></i> Final Result Summary
+            </div>
+            <div class="card-body">
+                <div id="summaryContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        let uploadedImageFilename = '';
+
+        // Handle image upload
+        document.getElementById('pest_image').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('pest_image', file);
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        uploadedImageFilename = data.filename;
+                        document.getElementById('uploadSuccessAlert').style.display = 'block';
+                        
+                        // Show image preview
+                        const preview = document.getElementById('imagePreview');
+                        preview.innerHTML = `<img src="${data.filepath}" alt="Uploaded Image" class="image-preview">`;
+                        
+                        setTimeout(() => {
+                            document.getElementById('uploadSuccessAlert').style.display = 'none';
+                        }, 3000);
+                    } else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error uploading image');
+                });
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            if (!uploadedImageFilename) {
+                alert('Please upload an image first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('image_filename', uploadedImageFilename);
+            formData.append('nitrogen', document.getElementById('nitrogen').value);
+            formData.append('phosphorus', document.getElementById('phosphorus').value);
+            formData.append('potassium', document.getElementById('potassium').value);
+
+            // Show loading
+            document.getElementById('analyzeBtn').disabled = true;
+            document.querySelector('.loading-spinner').style.display = 'block';
+
+            // Show feature extraction section
+            document.getElementById('featureExtractionSection').style.display = 'block';
+            document.getElementById('processedImage').src = `/static/uploads/${uploadedImageFilename}`;
+            
+            // Animate status texts
+            setTimeout(() => {
+                document.getElementById('statusText1').style.display = 'block';
+                setTimeout(() => {
+                    document.getElementById('statusText2').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('statusText3').style.display = 'block';
+                    }, 1000);
+                }, 1000);
+            }, 500);
+
+            fetch('/analyze', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('analyzeBtn').disabled = false;
+                document.querySelector('.loading-spinner').style.display = 'none';
+
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    alert(data.message || 'Analysis failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('analyzeBtn').disabled = false;
+                document.querySelector('.loading-spinner').style.display = 'none';
+                alert('Error during analysis');
+            });
+        });
+
+        function displayResults(data) {
+            // Prediction Result
+            document.getElementById('predictionResultCard').style.display = 'block';
+            document.getElementById('resultImage').src = data.image_url;
+            document.getElementById('detectedPest').textContent = data.pest_prediction.name;
+            document.getElementById('confidenceScore').textContent = data.pest_prediction.confidence + '%';
+
+            // Soil Analysis
+            document.getElementById('soilAnalysisCard').style.display = 'block';
+            const soil = data.soil_analysis;
+            document.getElementById('nValue').textContent = soil.nitrogen.value;
+            document.getElementById('pValue').textContent = soil.phosphorus.value;
+            document.getElementById('kValue').textContent = soil.potassium.value;
+            
+            updateStatus('nStatus', soil.nitrogen.status);
+            updateStatus('pStatus', soil.phosphorus.status);
+            updateStatus('kStatus', soil.potassium.status);
+            updateStatus('overallStatus', soil.overall_status);
+
+            // Imbalance message
+            const imbalanceDiv = document.getElementById('imbalanceMessage');
+            if (soil.imbalances.length > 0) {
+                const messages = soil.imbalances.map(imb => {
+                    const name = imb.replace('LOW_', '');
+                    return `<span class="fertility-low">Low ${name}</span>`;
+                });
+                imbalanceDiv.innerHTML = '<strong>Nutrient Imbalances:</strong> ' + messages.join(', ');
+            } else {
+                imbalanceDiv.innerHTML = '<span class="fertility-high">All nutrients are balanced</span>';
+            }
+
+            // Recommendations
+            document.getElementById('recommendationsCard').style.display = 'block';
+            const recs = data.recommendations;
+
+            // Pest recommendations
+            const pestRecDiv = document.getElementById('pestRecommendations');
+            let pestHtml = `<div class="recommendation-box"><strong>${recs.pest_recommendations.name}</strong><ul>`;
+            recs.pest_recommendations.treatments.forEach(treatment => {
+                pestHtml += `<li>${treatment}</li>`;
+            });
+            pestHtml += '</ul></div>';
+            pestRecDiv.innerHTML = pestHtml;
+
+            // Fertilizer recommendations
+            const fertRecDiv = document.getElementById('fertilizerRecommendations');
+            if (recs.fertilizer_recommendations.fertilizers.length > 0) {
+                let fertHtml = '<div class="recommendation-box"><ul>';
+                recs.fertilizer_recommendations.fertilizers.forEach(fert => {
+                    fertHtml += `<li>${fert}</li>`;
+                });
+                fertHtml += '</ul></div>';
+                if (recs.fertilizer_recommendations.application_notes.length > 0) {
+                    fertHtml += `<div class="recommendation-box"><strong>Application Notes:</strong><ul>`;
+                    recs.fertilizer_recommendations.application_notes.forEach(note => {
+                        fertHtml += `<li>${note}</li>`;
+                    });
+                    fertHtml += '</ul></div>';
+                }
+                fertRecDiv.innerHTML = fertHtml;
+            } else {
+                fertRecDiv.innerHTML = '<div class="recommendation-box">No fertilizer recommendations needed. Soil nutrients are adequate.</div>';
+            }
+
+            // Summary
+            document.getElementById('summaryCard').style.display = 'block';
+            const summaryDiv = document.getElementById('summaryContent');
+            let summaryHtml = '<div class="row"><div class="col-md-6"><h5>Detected Pest</h5><p><strong>' + 
+                data.pest_prediction.name + '</strong> (Confidence: ' + data.pest_prediction.confidence + '%)</p></div>';
+            summaryHtml += '<div class="col-md-6"><h5>Soil Fertility Status</h5><p><strong>' + 
+                soil.overall_status + '</strong></p></div></div>';
+            summaryHtml += '<hr><h5>Combined Recommendations</h5><ul>';
+            recs.summary.forEach(item => {
+                summaryHtml += `<li>${item}</li>`;
+            });
+            summaryHtml += '</ul>';
+            summaryDiv.innerHTML = summaryHtml;
+
+            // Scroll to results
+            document.getElementById('featureExtractionSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function updateStatus(elementId, status) {
+            const element = document.getElementById(elementId);
+            element.textContent = status;
+            element.className = 'fertility-' + status.toLowerCase();
+        }
+    </script>
+</body>
+</html>
+
